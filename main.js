@@ -13,7 +13,7 @@ function createWindow() {
     icon: `${__dirname}/icon.png`
   });
   win.setIcon(`${__dirname}/icon.png`)
-  if (process.env.NODE_ENV === 'development' || !process.env.NODE_ENV) win.loadURL('http://localhost:3000');
+  if (process.env.NODE_ENV === 'development') win.loadURL('http://localhost:3000');
   else win.loadFile(path.join(__dirname, 'build', 'index.html'), { hash: '' });
 }
 

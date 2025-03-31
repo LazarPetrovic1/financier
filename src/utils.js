@@ -19,6 +19,7 @@ export const intro = `
   
   The net worth formula is: Assets - Liabilities = Net worth.
 `;
+export const WORLD_BANK_API_INIT_YEAR = 1960;
 export const jsonf = `format=json`;
 export const perPage = 500;
 export const initPage = 1;
@@ -26,6 +27,7 @@ export const initPage = 1;
 export const allRegions = [
 	{"name":"Africa Eastern and Southern","id":"AFE"},
 	{"name":"Africa Western and Central","id":"AFW"},
+  {"name":"Africa","id":"AFR"},
 	{"name":"East Asia & Pacific (IBRD-only countries)","id":"BEA"},
   {"name":"Europe & Central Asia (IBRD-only countries)","id":"BEC"},
   {"name":"IBRD countries classified as high income","id":"BHI"},
@@ -96,7 +98,6 @@ export const allRegisteredCountries = [
   {"name":"Global information","id":"all"},
   {"name":"Aruba","id":"ABW"},
   {"name":"Afghanistan","id":"AFG"},
-  {"name":"Africa","id":"AFR"},
   {"name":"Angola","id":"AGO"},
   {"name":"Albania","id":"ALB"},
   {"name":"Andorra","id":"AND"},
@@ -427,13 +428,18 @@ export const selectIndication = [
 	},
 ];
 export const buildURL = (ctr, { from, to }) => {
+	let dates = [];
+	if (from && to) dates = [from, to];
+	else if (from && !to) dates = [from, (new Date()).getFullYear()]
+	else if (!from && to) dates = [WORLD_BANK_API_INIT_YEAR, to];
+	else if (!from && !to) dates = [WORLD_BANK_API_INIT_YEAR, (new Date()).getFullYear()]
   let url = `https://api.worldbank.org/v2/country/`
+	console.log("DEJC", { dates, from, to });
   const country = getCountryValue(ctr);
   if (country) url += country.id;
   else if (!country) url += "all";
   let urls = indicators.map((ind) => `${url}/indicator/${ind}`)
-  if (from && to) urls.map(url => `${url}?date=${from}:${to}`)
-  return urls.map(url => `${url}${from && to ? "&" : "?"}${jsonf}&per_page=100`)
+  return urls.map(url => `${url}?${jsonf}&date=${dates[0]}:${dates[1]}&per_page=100`)
 }
 // Threshholds in USD
 export const classSystem = [
