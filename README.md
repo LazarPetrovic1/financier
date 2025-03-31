@@ -46,3 +46,5 @@ You may fork the app if you wish. Below are the scripts added (written during v1
 + Majors (*X*.0.0) will be used when doing a massive application rehaul, such as: a complete dependency version overhaul, full stylistic and layout diffs and adding completely foreign features, which were never planned or intended to be added (even though some of these may not be considered *breaking changes*)
 
 ###### Patch notes
+
++ 1.0.1 - Made sure the dates worked on the `/search` page
