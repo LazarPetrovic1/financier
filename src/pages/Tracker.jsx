@@ -1,8 +1,8 @@
 import { useContext } from "react";
 import { countriesWithCurrency, currencies, currencyKeys } from "../utils";
-import SavingsBlock from "./SavingsBlock";
+import SavingsBlock from "../components/SavingsBlock";
 import { TrackerContext } from "../contexts/TrackerContext";
-import Alert from "./Alert";
+import Alert from "../components/Alert";
 import { useNavigate } from "react-router-dom";
 
 function Tracker() {

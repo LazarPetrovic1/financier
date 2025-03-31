@@ -5,7 +5,10 @@ function Nav() {
   return (
     <nav className="navbar navbar-expand-lg bg-body-tertiary">
       <div className="container-fluid">
-        <Link className="navbar-brand" href="/">Financier</Link>
+        <Link className="navbar-brand" href="/">
+          Financier
+          <span style={{ fontSize: '0.7rem' }}>&nbsp;v{process.env.REACT_APP_VERSION}</span>
+        </Link>
         <button
           className="navbar-toggler"
           type="button"
@@ -27,6 +30,12 @@ function Nav() {
             </li>
             <li className="nav-item">
               <Link className={`nav-link ${pathname === "/tracker" ? "active" : ""}`} to="/tracker">Tracker</Link>
+            </li>
+            <li className="nav-item">
+              <Link className={`nav-link ${pathname === "/about" ? "active" : ""}`} to="/about">About</Link>
+            </li>
+            <li className="nav-item">
+              <Link className={`nav-link ${pathname === "/patch-notes" ? "active" : ""}`} to="/patch-notes">Patches</Link>
             </li>
           </ul>
         </div>

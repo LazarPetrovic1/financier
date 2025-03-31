@@ -1,13 +1,5 @@
-import Welcome from "./Welcome";
-import Search from "./Search";
 import Nav from "./Nav";
-import Tracker from "./Tracker";
-import Results from "./Results";
-
-export {
-  Welcome,
-  Search,
-  Nav,
-  Tracker,
-  Results
-}
+import Alert from "./Alert";
+import SavingsBlock from "./SavingsBlock";
+import PatchListItem from "./PatchListItem";
+export { Nav, Alert, SavingsBlock, PatchListItem }

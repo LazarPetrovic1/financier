@@ -1,8 +1,8 @@
 import { useContext } from "react"
 import { TrackerContext } from "../contexts/TrackerContext"
 import { useNavigate } from "react-router-dom"
-import SavingsBlock from "./SavingsBlock";
-import Alert from "./Alert";
+import SavingsBlock from "../components/SavingsBlock";
+import Alert from "../components/Alert";
 import { classAdvice, classSystem } from "../utils";
 import Plot from "react-plotly.js";
 import { DataContext } from "../contexts/DataContext";

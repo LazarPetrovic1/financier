@@ -1,6 +1,6 @@
 {
   "name": "financier",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "private": true,
   "author": "LazarPetrovic1",
   "description": "Your best financial friend",
@@ -39,7 +39,8 @@
     "serve": "serve -s build",
     "patch": "node update-version.js --type patch",
     "major": "node update-version.js --type major",
-    "minor": "node update-version.js --type minor"
+    "minor": "node update-version.js --type minor",
+    "prod": "npm run build && npm run package"
   },
   "build": {
     "appId": "com.example.my-electron-app",
