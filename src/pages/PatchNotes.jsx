@@ -15,6 +15,7 @@ function PatchNotes() {
         <PatchListItem patchText={["1.0.0", "App developed and released to production"]} />
         <PatchListItem patchText={["1.0.1", "Fixed the dates on the `/search/ route"]} />
         <PatchListItem patchText={["1.0.2", "Added the `/patch-notes` and `/about` routes"]} />
+        <PatchListItem patchText={["1.0.3", "Decoupled the logic of all the routes"]} />
       </ul>
     </div>
   )

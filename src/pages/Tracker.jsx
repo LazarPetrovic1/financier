@@ -4,8 +4,9 @@ import SavingsBlock from "../components/SavingsBlock";
 import { TrackerContext } from "../contexts/TrackerContext";
 import Alert from "../components/Alert";
 import { useNavigate } from "react-router-dom";
+import OnlineCheckWrapper from "../ConnectionWrapper";
 
-function Tracker() {
+function TrackerComponent() {
   const { salary, setSalary, ownSavings, setOwnSavings, foreignSavings, setForeignSavings, unemployed, setUnemployed, currency, setCurrency, passiveIncome, setPassiveIncome, hasPassiveIncome, setHasPassiveIncome, processSavings, countryWithCurrency, setCountryWithCurrency, calculateTaxData, warning, setCalculatedFinancialData } = useContext(TrackerContext);
   const navigate = useNavigate();
   const execCalculation = async () => {
@@ -163,6 +164,13 @@ function Tracker() {
       </div>
     </>
   )
+
 }
+
+const Tracker = () => (
+  <OnlineCheckWrapper>
+    <TrackerComponent />
+  </OnlineCheckWrapper>
+)
 
 export default Tracker;

@@ -15,8 +15,8 @@ The project contains the following routes:
 
 ### Future work
 
-+ Add *about page* [patch => 1.0.1]
-+ Decouple the search and tracker pages [minor => 1.1.1]
++ ~~Add *about page* [patch => 1.0.1]~~
++ ~~Decouple the search and tracker pages [minor => 1.1.1]~~
 + Features per request (if they are found to be useful and insightful) [patch | minor | major]?
 
 #### Developer information
@@ -44,7 +44,3 @@ You may fork the app if you wish. Below are the scripts added (written during v1
 + Patches (0.0.*X*) will be used for bugfixes and very minor changes
 + Minors (0.*X*.0) will be used when reworking previous features using a different flow or engineering philosophy
 + Majors (*X*.0.0) will be used when doing a massive application rehaul, such as: a complete dependency version overhaul, full stylistic and layout diffs and adding completely foreign features, which were never planned or intended to be added (even though some of these may not be considered *breaking changes*)
-
-###### Patch notes
-
-+ 1.0.1 - Made sure the dates worked on the `/search` page

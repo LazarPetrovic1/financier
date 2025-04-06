@@ -60,6 +60,8 @@ export const TrackerProvider = ({ children }) => {
       passiveIncomeInUSD: passiveIncomeVal,
       localToUSD
     }
+    console.log("DEJDA", data);
+    
     return data;
   }
   return (

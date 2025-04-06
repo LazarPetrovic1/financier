@@ -20,7 +20,6 @@ export const intro = `
   The net worth formula is: Assets - Liabilities = Net worth.
 `;
 export const WORLD_BANK_API_INIT_YEAR = 1960;
-export const jsonf = `format=json`;
 export const perPage = 500;
 export const initPage = 1;
 // REGION_API = https://api.worldbank.org/v2/country?region=LCN
@@ -332,7 +331,7 @@ export const getCountryValue = (country) => {
 }
 export const indicators = [
   "NY.GDP.MKTP.CD",
-  "NY.GDP.PCAP.CD", 
+  "NY.GDP.PCAP.CD",
   "SP.POP.TOTL",
   "FP.CPI.TOTL.ZG",
   "SL.UEM.TOTL.ZS",
@@ -434,12 +433,11 @@ export const buildURL = (ctr, { from, to }) => {
 	else if (!from && to) dates = [WORLD_BANK_API_INIT_YEAR, to];
 	else if (!from && !to) dates = [WORLD_BANK_API_INIT_YEAR, (new Date()).getFullYear()]
   let url = `https://api.worldbank.org/v2/country/`
-	console.log("DEJC", { dates, from, to });
   const country = getCountryValue(ctr);
   if (country) url += country.id;
   else if (!country) url += "all";
   let urls = indicators.map((ind) => `${url}/indicator/${ind}`)
-  return urls.map(url => `${url}?${jsonf}&date=${dates[0]}:${dates[1]}&per_page=100`)
+  return urls.map(url => `${url}?format=json&date=${dates[0]}:${dates[1]}&per_page=100`)
 }
 // Threshholds in USD
 export const classSystem = [

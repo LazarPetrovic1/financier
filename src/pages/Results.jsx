@@ -1,20 +1,34 @@
-import { useContext } from "react"
+import { useContext, useEffect } from "react"
 import { TrackerContext } from "../contexts/TrackerContext"
 import { useNavigate } from "react-router-dom"
 import SavingsBlock from "../components/SavingsBlock";
 import Alert from "../components/Alert";
 import { classAdvice, classSystem } from "../utils";
 import Plot from "react-plotly.js";
-import { DataContext } from "../contexts/DataContext";
+import { useLawData } from '../hooks'
+import OnlineCheckWrapper from "../ConnectionWrapper";
 
-function Results() {
+function ResultsComponent() {
   const { calculatedFinancialData, countryWithCurrency } = useContext(TrackerContext)
-  const { isBarbarian } = useContext(DataContext)
+  const { isBarbarian, isLoading, getData } = useLawData();
+  useEffect(() => {
+    (async function() {
+      await getData(countryWithCurrency.name);
+    })()
+    // eslint-disable-next-line
+  }, [])
   const navigate = useNavigate();
   if (!calculatedFinancialData) return navigate(-1);
   const x = [...classSystem.map(x => x.className), "You"], y = [...classSystem.map(x => x.upperThreshhold), calculatedFinancialData.tangibleCashInUSD];
   const isLast = y.map((_, i) => i === y.length - 1)
   const { res, msgType } = classAdvice(calculatedFinancialData.class.className);
+  const RuleOfLawText = isLoading ? (
+    <span className="text-info"><em>Gathering overview of legal framework in your country...</em></span>
+  ) : isBarbarian ? (
+    <span className="text-danger"><b>Unfortunately, the rule of law is not respected in your country. Run as far and wide as your legs can carry you!</b></span>
+  ) : !isBarbarian ? (
+    <span className="text-success"><b>Luckily, you seem to have that on lock! Huddle down and protect your democracy!</b></span>
+  ) : null;
   return (
     <div className="pt-4 pb-5">
       <h1 className="text-primary text-center text-decoration-underline mb-4">
@@ -81,14 +95,17 @@ function Results() {
       <div>
         It is also important to consider the rule of law, which is the #1 indicator of building long-lasting wealth. <br />
         <div className="text-center my-3" style={{ fontSize: '1.5rem' }}>
-          {isBarbarian ?
-            <span className="text-danger"><b>Unfortunately, the rule of law is not respected in your country. Run as far and wide as your legs can carry you!</b></span> :
-            <span className="text-success"><b>Luckily, you seem to have that on lock! Huddle down and protect your democracy!</b></span>
-          }
+          {RuleOfLawText}
         </div>
       </div>
     </div>
   )
 }
+
+const Results = () => (
+  <OnlineCheckWrapper>
+    <ResultsComponent />
+  </OnlineCheckWrapper>
+)
 
 export default Results

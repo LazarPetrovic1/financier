@@ -2,8 +2,9 @@ import { useContext } from "react";
 import { allRegisteredCountries, selectIndication } from "../utils";
 import Plot from "react-plotly.js";
 import { DataContext } from '../contexts/DataContext'
+import OnlineCheckWrapper from "../ConnectionWrapper";
 
-function Search() {
+function SearchComponent() {
   const { country, setCountry, startDate, setStartDate, endDate, setEndDate, countryData, getData, graph, setGraph } = useContext(DataContext)
   const onSubmit = async e => { e.preventDefault(); await getData(); }
   return (
@@ -42,7 +43,7 @@ function Search() {
           </div>
         </div>
       </form>
-      <div className="">
+      <div>
         {Object.keys(countryData).length > 0 && (
           <div>
             <h2 className="text-center mt-3 mb-2">
@@ -90,5 +91,11 @@ function Search() {
     </div>
   )
 }
+
+const Search = () => (
+  <OnlineCheckWrapper>
+    <SearchComponent />
+  </OnlineCheckWrapper>
+)
 
 export default Search;
