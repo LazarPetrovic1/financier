@@ -3,6 +3,7 @@ import { Nav } from './components'
 import { Search, Tracker, Welcome, Results, About, PatchNotes } from './pages'
 import { DataProvider } from './contexts/DataContext';
 import { TrackerProvider } from './contexts/TrackerContext';
+import { CALC_HEIGHT_MINUS } from './utils';
 
 function App() {
   return (
@@ -10,7 +11,7 @@ function App() {
       <TrackerProvider>
         <Router>
           <Nav />
-          <div className="container">
+          <div className="container-fluid" style={{ height: `calc(100vh - ${CALC_HEIGHT_MINUS}px)` }}>
             <Switch>
               <Route path='/' element={<Welcome />} />
               <Route path='/results' element={<Results />} />

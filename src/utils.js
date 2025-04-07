@@ -19,6 +19,7 @@ export const intro = `
   
   The net worth formula is: Assets - Liabilities = Net worth.
 `;
+export const CALC_HEIGHT_MINUS = 64;
 export const WORLD_BANK_API_INIT_YEAR = 1960;
 export const perPage = 500;
 export const initPage = 1;
