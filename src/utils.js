@@ -1,3 +1,7 @@
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+export const LS_DATA_KEY = "FINANCIER_";
+export const LS_HISTORY_KEY = "FINANCIER_HISTORY";
 export const intro = `
   To calculate a person's net worth, you need to subtract all liabilities from all assets.
 
@@ -19,6 +23,8 @@ export const intro = `
   
   The net worth formula is: Assets - Liabilities = Net worth.
 `;
+// for wealth score
+export const clamp = (num, min = 0, max = 100) => Math.max(min, Math.min(max, num));
 export const CALC_HEIGHT_MINUS = 64;
 export const WORLD_BANK_API_INIT_YEAR = 1960;
 export const perPage = 500;
@@ -339,19 +345,19 @@ export const indicators = [
   "SH.XPD.CHEX.GD.ZS",
   "SE.XPD.TOTL.GD.ZS",
   "SI.POV.NAHC",
-	"IC.TAX.TOTL.CP.ZS",
+	"GC.TAX.TOTL.GD.ZS",
 	"SP.DYN.LE00.IN", // life expectancy
-	"EG.ELC.ACCS.ZS", // access to electricity
-	"SH.H2O.BASW.ZS", // access to water
 	"SI.POV.GINI", // GINI coefficient
 	"PA.NUS.FCRF", // exchange rate against USD
-	"BN.CAB.XOKA.CD", // current account balance (in usd)
-	"IC.REG.PROC", // business-procedures
-	// Implement these later
-	// RL.PER.RNK.UPPER, // Rule of Law: Percentile Rank, Upper Bound of 90% Confidence Interval
-	// RL.PER.RNK.LOWER, // Rule of Law: Percentile Rank, Lower Bound of 90% Confidence Interval
-	"RL.PER.RNK", // Rule of Law: Percentile Rank
-	"RL.EST", // Rule of Law: Estimate
+	"NY.GNP.PCAP.CD", // GNI per capita
+	"NY.ADJ.NNTY.PC.CD", // adjusted net national income per capita
+	"FS.AST.PRVT.GD.ZS", // Domestic credit to private sector (% of GDP)
+	"NY.GNS.ICTR.ZS", // Gross savings rate (as % of GDP)
+	"PA.NUS.PPP", // PPP conversion factor
+	"BX.TRF.PWKR.CD.DT", // personal remittances received
+	"SL.TLF.CACT.ZS", // labour force participation rate
+	"IT.NET.USER.ZS", // people on the Internet (as % of population)
+	"IT.NET.SECR.P6", // secure Internet servers per 1 million people
 ];
 export const selectIndication = [
   {
@@ -388,43 +394,55 @@ export const selectIndication = [
   },
 	{
 		code: "taxRatePercentage",
-		value: "Total Tax Rate"
+		value: "Tax revenue (as % of GDP)"
 	},
 	{
 		code: "lifeExpectancy",
 		value: "Life Expectancy"
 	},
 	{
-		code: "electricityAccess",
-		value: "Access to electricity"
-	},
-	{
-		code: "waterAccess",
-		value: "Access to drinking water"
-	},
-	{
 		code: "gini",
-		value: "GINI coefficient"
+		value: "GINI Coefficient"
 	},
 	{
 		code: "exchangeRate",
-		value: "Exchange rate (against the USD)"
+		value: "Exchange rate against USD"
 	},
 	{
-		code: "currentBalance",
-		value: "Current balance (in USD)"
+		code: "gniPerCapita",
+		value: "GNI per capita"
 	},
 	{
-		code: "businessRegistrationSteps",
-		value: "How many procedures to register a business"
+		code: "adjustedNetIncome",
+		value: "Adjusted net national income per capita"
 	},
 	{
-		code: "ruleOfLawPercentile",
-		value: "Rule of Law: Percentile Rank"
+		code: "creditToPrivateSector",
+		value: "Domestic credit to private sector (as % of GDP)"
 	},
 	{
-		code: "ruleOfLawEstimate",
-		value: "Rule of Law: Estimate"
+		code: "grossSavingsRate",
+		value: "Gross savings rate (as % of GDP)"
+	},
+	{
+		code: "pppConversionFactor",
+		value: "PPP Conversion Factor"
+	},
+	{
+		code: "personalRemittances",
+		value: "Personal Remittances Received"
+	},
+	{
+		code: "labourForceParticipation",
+		value: "Labour Force Participation Rate"
+	},
+	{
+		code: "internetUsers",
+		value: "Number of netizens (as % of population)"
+	},
+	{
+		code: "secureInternetServers",
+		value: "Secure Internet Servers (per 1M people)"
 	},
 ];
 export const buildURL = (ctr, { from, to }) => {
@@ -440,27 +458,41 @@ export const buildURL = (ctr, { from, to }) => {
   let urls = indicators.map((ind) => `${url}/indicator/${ind}`)
   return urls.map(url => `${url}?format=json&date=${dates[0]}:${dates[1]}&per_page=100`)
 }
-// Threshholds in USD
-export const classSystem = [
-  { className: "Lower Class", lowerThreshhold: 0, upperThreshhold: 1045, percentage: 10 },
-  { className: "Working Class", lowerThreshhold: 1045, upperThreshhold: 3085, percentage: 20 },
-  { className: "Lower-Middle Class", lowerThreshhold: 3085, upperThreshhold: 4515, percentage: 30 },
-  { className: "Middle Class", lowerThreshhold: 4516, upperThreshhold: 14005, percentage: 25 },
-  { className: "Upper-Middle Class", lowerThreshhold: 14006, upperThreshhold: 24665, percentage: 8 },
-  { className: "Upper Class", lowerThreshhold: 24666, upperThreshhold: 74000, percentage: 5 },
-  { className: "Owner Class", lowerThreshhold: 74000, upperThreshhold: 200000, percentage: 2 }
-]
-export const classAdvice = (name) => {
-	if (name === "Lower Class") return { res: "You require all the help you can get, so seek it as soon as possible.", msgType: "danger" }
-	if (name === "Working Class") return { res: "You are in a tough financial situation; you might alleviate your financial issues by developing an in-demand skill, cutting down on all liabilities and vices, as well as abstinence from having children.", msgType: "danger" }
-	if (name === "Lower-Middle Class") return { res: "You are in an inenviable financial situation; better budgeting, prioritizing public transportation over personal vehicles as well as consolidating belongings might improve your standing.", msgType: "warning" }
-	if (name === "Middle Class") return { res: "You can't rest on your laurels just yet. In order to do that, you should increase your savings by either taking on more work or developing a passive income stream.", msgType: "info" }
-	if (name === "Upper-Middle Class") return { res: "You can easily retire by moving to a poorer country relative to your own. Should you choose to stay, removing yourself from the workforce and starting your own business (or expanding it if you already have one) would propel you up the ladder.", msgType: "info" }
-	if (name === "Upper Class") return { res: "You've arrived! Put your feet on the table", msgType: "success" }
-	if (name === "Owner Class") return { res: "If you're here, chances are you don't need me to tell you what to do.", msgType: "success" }
-}
-export const extractPlotData = (arrs) => 
-  arrs.map(arr => ({ date: parseInt(arr.date), value: arr.value }));
+
+export const incomeClassSystem = [
+  { className: "Lower Class", lower: 0, upper: 1045 },
+  { className: "Working Class", lower: 1045, upper: 3085 },
+  { className: "Lower-Middle Class", lower: 3085, upper: 4515 },
+  { className: "Middle Class", lower: 4515, upper: 14005 },
+  { className: "Upper-Middle Class", lower: 14005, upper: 24665 },
+  { className: "Upper Class", lower: 24665, upper: 74000 },
+  { className: "Owner Class", lower: 74000, upper: Infinity }
+];
+
+export const wealthClassSystem = [
+  { className: "Negative Net Worth", lower: -Infinity, upper: 0 },
+  { className: "Emerging Wealth", lower: 0, upper: 10000 },
+  { className: "Financially Stable", lower: 10000, upper: 100000 },
+  { className: "Affluent", lower: 100000, upper: 1000000 },
+  { className: "High Net Worth", lower: 1000000, upper: 10000000 },
+  { className: "Ultra High Net Worth", lower: 10000000, upper: Infinity }
+];
+
+export const buildLocalWealthClasses = (gniPerCapita, wealthEnvironmentScore) => {
+  const adjustmentFactor = (Number(gniPerCapita || 0) / 15000) * (Number(wealthEnvironmentScore || 50) / 50);
+  const factor = Math.max(0.25, Math.min(8, adjustmentFactor));
+  return [
+    { className: "Negative Net Worth", lower: -Infinity, upper: 0 },
+    { className: "Emerging Wealth", lower: 0, upper: 10000 * factor },
+    { className: "Financially Stable", lower: 10000 * factor, upper: 100000 * factor },
+    { className: "Affluent", lower: 100000 * factor, upper: 1000000 * factor },
+    { className: "High Net Worth", lower: 1000000 * factor, upper: 10000000 * factor },
+    { className: "Ultra High Net Worth", lower: 10000000 * factor, upper: Infinity }
+  ];
+};
+
+export const extractPlotData = (arrs) => arrs && arrs.map(arr => ({ date: parseInt(arr.date), value: arr.value }));
+export const getLatestValue = arr => arr.find(x => x.value !== null)?.value ?? 0;
 export const currencies = {
 	"USD": {
 		"symbol": "$",
@@ -2473,3 +2505,126 @@ export const countriesWithCurrency = [
   { name: 'Zambia', currency: 'ZMW' },
   { name: 'Zimbabwe', currency: 'ZWL' }
 ];
+
+export const getWealthEnvironmentLabel = score => {
+  if (score >= 85) return { res: "Excellent", color: "rgb(25, 135, 84)", class: "success" };
+  if (score >= 70) return { res: "Strong", color: "rgb(13, 110, 253)", class: "primary" };
+  if (score >= 55) return { res: "Moderate", color: "rgb(13, 202, 240)", class: "info" };
+  if (score >= 40) return { res: "Challenging", color: "rgb(255, 193, 7)", class: "warning" };
+  return { res: "Difficult", color: "rgb(220, 53, 69)", class: "danger" };
+};
+
+
+export const convertToUSD = async (amount, currency) => {
+  const value = Number(amount) || 0;
+  if (!value) return 0;
+  if (currency === "USD") return value;
+  const rate = await fetch(
+		`https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/${currency.toLowerCase()}.json`
+	).then(x => x.json()).then(x => x[currency.toLowerCase()].usd);
+  return value * rate;
+};
+
+export function toHumanReadable(str) {
+  const words = str.replace(/([a-z])([A-Z])/g, '$1 $2').toLowerCase();
+  return words.charAt(0).toUpperCase() + words.slice(1);
+}
+
+const downloadFile = (url, filename) => {
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+};
+
+export const buildFullReport = ({ calculatedFinancialData, countryWithCurrency, countryData, wealthIndicators }) => {
+  return {
+    meta: {
+      generatedAt: new Date().toISOString(),
+      country: countryWithCurrency?.name,
+      currency: countryWithCurrency?.currency
+    },
+
+    financial: calculatedFinancialData,
+
+    country: {
+      gdp: getLatestValue(countryData.gdp),
+      gdpPerCapita: getLatestValue(countryData.gdpPerCapita),
+      population: getLatestValue(countryData.totalPopulation),
+      inflation: getLatestValue(countryData.percentInflation),
+      unemployment: getLatestValue(countryData.percentUnemployment),
+      poverty: getLatestValue(countryData.povertyHeadcount),
+      gini: getLatestValue(countryData.gini),
+      lifeExpectancy: getLatestValue(countryData.lifeExpectancy),
+      gniPerCapita: getLatestValue(countryData.gniPerCapita),
+      internetUsers: getLatestValue(countryData.internetUsers),
+      labourParticipation: getLatestValue(countryData.labourForceParticipation),
+      savingsRate: getLatestValue(countryData.grossSavingsRate)
+    },
+
+    indicators: wealthIndicators
+  };
+};
+
+export const exportToJSON = (report) => {
+  const json = JSON.stringify(report, null, 2);
+  const blob = new Blob([json], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  downloadFile(url, `wealth-report-${report.meta.country}.json`);
+};
+
+export const exportToCSV = (report) => {
+  const rows = [];
+  // Financial section
+  rows.push(["SECTION", "FINANCIAL"]);
+  Object.entries(report.financial).forEach(([k, v]) => {
+    if (typeof v === "object") return;
+    rows.push([k, v]);
+  });
+
+  rows.push([]);
+  // Country data
+  rows.push(["SECTION", "COUNTRY DATA"]);
+  Object.entries(report.country).forEach(([k, v]) => rows.push([k, v]));
+  rows.push([]);
+  // Indicators
+  rows.push(["SECTION", "WEALTH INDICATORS"]);
+  Object.entries(report.indicators).forEach(([k, v]) => rows.push([k, v]));
+  const csv = rows.map(r => r.map(x => `"${x ?? ""}"`).join(",")).join("\n");
+  const blob = new Blob([csv], { type: "text/csv" });
+  const url = URL.createObjectURL(blob);
+  downloadFile(url, `wealth-report-${report.meta.country}.csv`);
+};
+
+export const exportToPDF = (report) => {
+  const doc = new jsPDF();
+  doc.setFontSize(16);
+  doc.text(`Wealth Report - ${report.meta.country}`, 14, 20);
+  doc.setFontSize(10);
+  doc.text(`Generated: ${report.meta.generatedAt}`, 14, 28);
+  // Financial table
+  autoTable(doc, {
+    startY: 35,
+    head: [["Financial Metric", "Value"]],
+    body: Object.entries(report.financial).filter(([k, v]) => typeof v !== "object").map(([k, v]) => [k, String(v)])
+  });
+
+  // Country data
+  autoTable(doc, {
+    startY: doc.lastAutoTable.finalY + 10,
+    head: [["Country Metric", "Value"]],
+    body: Object.entries(report.country).map(([k, v]) => [k, String(v)])
+  });
+
+  // Indicators
+  autoTable(doc, {
+    startY: doc.lastAutoTable.finalY + 10,
+    head: [["Indicator", "Score"]],
+    body: Object.entries(report.indicators).map(([k, v]) => [k, String(v)])
+  });
+
+  doc.save(`wealth-report-${report.meta.country}.pdf`);
+};

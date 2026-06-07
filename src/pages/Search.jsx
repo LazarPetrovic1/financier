@@ -12,7 +12,7 @@ function SearchComponent() {
       <form onSubmit={onSubmit}>
         <div className="form-control d-flex justify-content-between align-items-baseline">
           <label htmlFor="search" className="me-4">Search country <i>(optional)</i></label>
-          <select onChange={e => setCountry(e.target.value)} name="search" id="search" className="form-select me-4" style={{ flex: 1 }}>
+          <select value={country} onChange={e => setCountry(e.target.value)} name="search" id="search" className="form-select me-4" style={{ flex: 1 }}>
             <option className="text-center" selected value="" disabled>-- Choose one --</option>
             {allRegisteredCountries.map((count, i) => (
               <option className="text-center" key={`${count.code}-${i}`} value={count.name}>{count.name}</option>
@@ -51,7 +51,7 @@ function SearchComponent() {
               <span className="text-primary">{country}</span>
             </h2>
             <div className="my-3">
-              <select className="form-select" onChange={e => setGraph(() => e.target.value)} name="selectIndication" id="selectIndication">
+              <select value={graph} className="form-select" onChange={e => setGraph(() => e.target.value)} name="selectIndication" id="selectIndication">
                 {selectIndication.map((si, i) => (
                   <option key={i} value={si.code}>{si.value}</option>
                 ))}
@@ -61,8 +61,8 @@ function SearchComponent() {
               <Plot
                 data={[
                   {
-                    x: countryData[graph].map(x => x.date),
-                    y: countryData[graph].map(x => x.value),
+                    x: countryData[graph].map(x => x?.date),
+                    y: countryData[graph].map(x => x?.value),
                     type: 'scatter',
                     mode: 'lines+markers',
                     marker: {color: 'lightblue'},

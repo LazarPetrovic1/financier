@@ -35,6 +35,9 @@ function Nav() {
               <Link className={`nav-link ${pathname === "/about" ? "active" : ""}`} to="/about">About</Link>
             </li>
             <li className="nav-item">
+              <Link className={`nav-link ${pathname === "/history" ? "active" : ""}`} to="/history">History</Link>
+            </li>
+            <li className="nav-item">
               <Link className={`nav-link ${pathname === "/patch-notes" ? "active" : ""}`} to="/patch-notes">Patches</Link>
             </li>
           </ul>

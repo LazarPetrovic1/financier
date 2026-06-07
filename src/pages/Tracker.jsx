@@ -1,170 +1,223 @@
 import { useContext } from "react";
-import { countriesWithCurrency, currencies, currencyKeys } from "../utils";
-import SavingsBlock from "../components/SavingsBlock";
+import { countriesWithCurrency, currencies, currencyKeys, toHumanReadable } from "../utils";
 import { TrackerContext } from "../contexts/TrackerContext";
 import Alert from "../components/Alert";
 import { useNavigate } from "react-router-dom";
 import OnlineCheckWrapper from "../ConnectionWrapper";
 
 function TrackerComponent() {
-  const { salary, setSalary, ownSavings, setOwnSavings, foreignSavings, setForeignSavings, unemployed, setUnemployed, currency, setCurrency, passiveIncome, setPassiveIncome, hasPassiveIncome, setHasPassiveIncome, processSavings, countryWithCurrency, setCountryWithCurrency, calculateTaxData, warning, setCalculatedFinancialData } = useContext(TrackerContext);
+  const {
+    salary,
+    setSalary,
+    passiveIncome,
+    setPassiveIncome,
+    householdSize,
+    setHouseholdSize,
+    currency,
+    setCurrency,
+    countryWithCurrency,
+    setCountryWithCurrency,
+    assets,
+    setAssets,
+    liabilities,
+    setLiabilities,
+    foreignHoldingDraft,
+    setForeignHoldingDraft,
+    addForeignHolding,
+    warning,
+    calculateFinancialData,
+    setCalculatedFinancialData
+  } = useContext(TrackerContext);
+
   const navigate = useNavigate();
   const execCalculation = async () => {
-    const data = await calculateTaxData();
+    const data = await calculateFinancialData();
     if (!data) return;
-    setCalculatedFinancialData(() => data);
-    navigate('/results');
-  }
-  return (
-    <>
-      <div className="pt-4 pb-5">
-        <h1 className="text-primary text-center text-decoration-underline mb-4">Money tracker</h1>
-        {warning.map(w => <Alert msg={w} key={w} msgType="warning" />)}
-        <div className="form-control">
-          <div className="mt-2">
-            <select
-              className="form-select"
-              name="countryWithCurrency"
-              id="countryWithCurrency"
-              value={countryWithCurrency.name}
-              onChange={e => setCountryWithCurrency(() => countriesWithCurrency.find(cwc => cwc.name.toLowerCase() === e.target.value.toLowerCase()))}
-            >
-              <option className="text-center" value="" disabled selected>-- Choose a country --</option>
-              {countriesWithCurrency.map(cwc => (
-                <option className="text-center" key={cwc.name} value={cwc.name}>{cwc.name}</option>
-              ))}
-            </select>
-          </div>
-          <hr />
-          <div className="d-flex justify-content-between align-items-center">
-            <label className="d-inline-block me-2" htmlFor="currency">Local currency: </label>
-            <select value={currency} onChange={(e) => setCurrency(e.target.value)} name="currency" id="currency" className="form-select">
-              <option value="" disabled>-- Choose one --</option>
-              {currencyKeys.sort().map(ck => (
-                <option key={ck} value={ck}>{currencies[ck].name} ({currencies[ck].symbol})</option>
-              ))}
-            </select>
-          </div>
-          <hr />
-          <div className="d-flex justify-content-between align-items-center">
-            <div>
-              <label htmlFor="salary" className="me-4">Monthly earnings:</label>
-              <span>
-                <span className="d-inline-block me-2">{currency ? currencies[currency].symbol : "$"}</span>
-                <input
-                  value={salary}
-                  onChange={e => setSalary(e.target.value)}
-                  type="text"
-                  name="salary"
-                  id="salary"
-                  placeholder={unemployed ? "Get a job, lol" : `Your net salary (in ${currency ? currencies[currency].symbol : "$"})`}
-                  disabled={unemployed}
-                />
-              </span>
-            </div>
-            <div className="d-flex align-items-center">
-              <input
-                onChange={() => setUnemployed((prev) => !prev)}
-                value={unemployed}
-                type="checkbox"
-                name="unemployed"
-                className="d-inline-block me-2"
-                id="unemployed"
-                style={{ height: "20px", width: "20px" }}
-              />
-              <label htmlFor="unemployed">No source of income</label>
-            </div>
-          </div>
-          <hr />
-          <div>
-            <label htmlFor="ownsavings" className="me-4">Local currency savings:</label>
-            <span>
-              <span className="d-inline-block me-2">{currency ? currencies[currency].symbol : "$"}</span>
-              <input
-                value={ownSavings}
-                onChange={e => setOwnSavings(e.target.value)}
-                type="text"
-                name="ownsavings"
-                id="ownsavings"
-                placeholder={"Savings in local currency"}
-              />
-            </span>
-          </div>
-          <hr />
-          <div className="mb-2">
-            <label htmlFor="foreignsavings" className="me-4">Foreign currency savings:</label>
-            <span className="d-inline-flex gap-1">
-              <select style={{ maxWidth: '80px' }} value={foreignSavings.currency} onChange={(e) => setForeignSavings(prev => ({ ...prev, currency: e.target.value }))} name="foreignSavings.currency" id="foreignSavings.currency">
-                <option value="" disabled>-- Choose one --</option>
-                {currencyKeys.sort().map(ck => (
-                  <option key={ck} value={ck}>{currencies[ck].symbol}</option>
-                ))}
-              </select>
-              <input
-                className="d-inline-block me-2"
-                type="text"
-                name="foreignsavings"
-                id="foreignsavings"
-                value={foreignSavings.amount}
-                onChange={(e) => setForeignSavings(prev => ({ ...prev, amount: e.target.value }))}
-                placeholder={"Savings in foreign currency"}
-              />
-            </span>
-            <button type="button" className="btn btn-secondary" onClick={processSavings}>Add</button>
-          </div>
-        </div>
-        {foreignSavings.savings.length > 0 && (
-          <div className="form-control">
-            <h4 className="text-info">Foreign savings</h4>
-            <br />
-            <div className="container text-center">
-              <div className="row align-items-start">
-                <div className="col-1">#</div>
-                <div className="col">Local currency</div>
-                <div className="col">Foreign currency</div>
-                <div className="col">Amount</div>
-                <div className="col">Currency conversion</div>
-              </div>
-            </div>
-            {foreignSavings.savings.map((save, i) => (
-              <SavingsBlock id={i + 1} currency={currency} savings={save} key={i} />
-            ))}
-          </div>
-        )}
-        <div className="form-control d-flex justify-content-between align-items-center">
-          <div className="my-2">
-            <label htmlFor="passiveIncome" className="me-4">Passive income stream:</label>
-            <span>
-              <span className="d-inline-block me-2">{currency ? currencies[currency].symbol : "$"}</span>
-              <input
-                value={passiveIncome}
-                onChange={e => setPassiveIncome(e.target.value)}
-                type="text"
-                name="passiveIncome"
-                id="passiveIncome"
-                placeholder={hasPassiveIncome ? "Passive income in $" : "Commit tax fraud, lol"}
-                disabled={!hasPassiveIncome}
-              />
-            </span>
-          </div>
-          <div className="d-flex align-items-center">
-            <input
-              onChange={() => setHasPassiveIncome((prev) => !prev)}
-              value={hasPassiveIncome}
-              type="checkbox"
-              name="hasPassiveIncome"
-              className="d-inline-block me-2"
-              id="hasPassiveIncome"
-              style={{ height: "20px", width: "20px" }}
-            />
-            <label htmlFor="hasPassiveIncome">{hasPassiveIncome ? "Passive income (in $)" : "No source of income"}</label>
-          </div>
-        </div>
-        <button className="btn w-100 btn-primary btn-lg mt-3" onClick={execCalculation}>Calculate</button>
-      </div>
-    </>
-  )
+    setCalculatedFinancialData(data);
+    navigate("/results");
+  };
 
+  const updateAsset = (key, value) => setAssets(prev => ({ ...prev, [key]: value }));
+  const updateLiability = (key, value) => setLiabilities(prev => ({ ...prev, [key]: value }));
+
+  return (
+    <div className="pt-4 pb-5">
+      <h1 className="text-primary text-center text-decoration-underline mb-4">Money Tracker</h1>
+      {warning.map(w => (
+        <Alert key={w} msg={w} msgType="warning" />
+      ))}
+
+      {/* COUNTRY */}
+
+      <div className="form-control mb-3">
+        <h4 className="text-info">Country & Currency</h4>
+        <hr />
+        <select
+          className="form-select"
+          value={countryWithCurrency?.name || ""}
+          onChange={(e) =>
+            setCountryWithCurrency(countriesWithCurrency.find(c => c.name.toLowerCase() === e.target.value.toLowerCase()))
+          }
+        >
+          <option value="" disabled>-- Choose a country --</option>
+          {countriesWithCurrency.map(c => <option key={c.name} value={c.name}>{c.name}</option>)}
+        </select>
+        <hr />
+        <select value={currency} onChange={(e) => setCurrency(e.target.value)} className="form-select">
+          {currencyKeys.sort().map(code => (
+            <option key={code} value={code}>{currencies[code].name}{" "}({currencies[code].symbol})</option>
+          ))}
+        </select>
+        <hr />
+        <label className="mb-2">Household Size</label>
+        <input
+          className="form-control"
+          type="number"
+          min="1"
+          value={householdSize}
+          onChange={(e) => setHouseholdSize(Number(e.target.value))}
+        />
+      </div>
+
+      {/* INCOME */}
+      <div className="form-control mb-3">
+        <h4 className="text-success">Income</h4>
+        <hr />
+        <label>Monthly Salary</label>
+        <input
+          className="form-control"
+          value={salary}
+          onChange={(e) => setSalary(e.target.value)}
+          placeholder={`Salary in ${currency}`}
+        />
+        <hr />
+        <label>Passive Income</label>
+        <input
+          className="form-control"
+          value={passiveIncome}
+          onChange={(e) => setPassiveIncome(e.target.value)}
+          placeholder={`Passive income in ${currency}`}
+        />
+      </div>
+
+      {/* CASH */}
+      <div className="form-control mb-3">
+        <h4 className="text-primary">Cash & Banking</h4>
+        <hr />
+        <label>Checking Account</label>
+        <input
+          className="form-control"
+          value={assets.checkingAccount}
+          onChange={(e) => updateAsset("checkingAccount", e.target.value)}
+        />
+        <hr />
+        <label>Savings Account</label>
+        <input
+          className="form-control"
+          value={assets.savingsAccount}
+          onChange={(e) => updateAsset("savingsAccount", e.target.value)}
+        />
+        <hr />
+        <h5>Foreign Currency Holdings</h5>
+        <div className="d-flex gap-2">
+          <select
+            className="form-select"
+            style={{ maxWidth: 120 }}
+            value={foreignHoldingDraft.currency}
+            onChange={(e) => setForeignHoldingDraft(prev => ({ ...prev, currency: e.target.value}))}
+          >
+            {currencyKeys.map(code => <option key={code} value={code}>{code}</option>)}
+          </select>
+          <input
+            className="form-control"
+            value={foreignHoldingDraft.amount}
+            onChange={(e) => setForeignHoldingDraft(prev => ({ ...prev, amount: e.target.value }))}
+            placeholder="Amount"
+          />
+          <button className="btn btn-secondary" onClick={addForeignHolding}>Add</button>
+        </div>
+
+        {assets.foreignCurrencyHoldings.length > 0 && (
+          <>
+            <hr />
+            {assets.foreignCurrencyHoldings.map((item, i) => (
+              <div key={i} className="d-flex justify-content-between">
+                <span>{item.currency}</span>
+                <span>{item.amount}</span>
+              </div>
+            ))}
+          </>
+        )}
+      </div>
+
+      {/* INVESTMENTS */}
+      <div className="form-control mb-3">
+        <h4 className="text-warning">Investments</h4>
+        <hr />
+        {["stocks", "etfs", "bonds", "mutualFunds"].map(field => (
+          <div key={field} className="mb-3">
+            <label>{toHumanReadable(field)}</label>
+            <input
+              className="form-control"
+              value={assets[field]}
+              onChange={(e) => updateAsset(field, e.target.value)}
+            />
+          </div>
+        ))}
+      </div>
+
+      {/* REAL ESTATE */}
+      <div className="form-control mb-3">
+        <h4 className="text-info">Real Estate</h4>
+        <hr />
+        <label>Primary Residence</label>
+        <input
+          className="form-control mb-3"
+          value={assets.primaryResidence}
+          onChange={(e) => updateAsset("primaryResidence", e.target.value)}
+        />
+        <label>Rental Properties</label>
+        <input
+          className="form-control"
+          value={assets.rentalProperties}
+          onChange={(e) => updateAsset("rentalProperties", e.target.value)}
+        />
+      </div>
+
+      {/* ALTERNATIVE */}
+      <div className="form-control mb-3">
+        <h4 className="text-secondary">Alternative Assets</h4>
+        <hr />
+        {["crypto", "preciousMetals", "collectibles", "businessValue"].map(field => (
+          <div key={field} className="mb-3">
+            <label>{toHumanReadable(field)}</label>
+            <input
+              className="form-control"
+              value={assets[field]}
+              onChange={(e) => updateAsset(field, e.target.value)}
+            />
+          </div>
+        ))}
+      </div>
+
+      {/* LIABILITIES */}
+      <div className="form-control mb-3">
+        <h4 className="text-danger">Liabilities</h4>
+        <hr />
+        {["mortgage", "creditCards", "autoLoans", "studentLoans", "personalLoans", "otherObligations"].map(field => (
+          <div key={field} className="mb-3">
+            <label>{toHumanReadable(field)}</label>
+            <input
+              className="form-control"
+              value={liabilities[field]}
+              onChange={(e) => updateLiability(field, e.target.value)}
+            />
+          </div>
+        ))}
+      </div>
+      <button className="btn btn-primary btn-lg w-100 mt-3" onClick={execCalculation}>Calculate Net Worth</button>
+    </div>
+  );
 }
 
 const Tracker = () => (

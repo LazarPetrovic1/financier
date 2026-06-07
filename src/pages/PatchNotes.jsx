@@ -1,6 +1,14 @@
 import { PatchListItem } from "../components";
 const { shell } = window.require('electron');
 
+const major200 = `
+Changed metrics and indicators;
+Added persistence;
+Added report generation & history;
+Extended the report based on more appropriate metrics;
+Added tracking over time;
+`
+
 function PatchNotes() {
   const openRepo = () => shell.openExternal('https://github.com/LazarPetrovic1/financier')
   return (
@@ -17,6 +25,7 @@ function PatchNotes() {
         <PatchListItem patchText={["1.0.2", "Added the `/patch-notes` and `/about` routes"]} />
         <PatchListItem patchText={["1.0.3", "Decoupled the logic of all the routes"]} />
         <PatchListItem patchText={["1.0.4", "Cosmetic changes"]} />
+        <PatchListItem patchText={["2.0.0", major200]} />
       </ul>
     </div>
   )
